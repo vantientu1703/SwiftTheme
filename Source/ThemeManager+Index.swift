@@ -10,13 +10,13 @@ import UIKit
 
 extension ThemeManager {
     
-    public class func colorElement(for array: [String]) -> UIColor? {
+    public class func colorElement(for array: [UIColor]) -> UIColor? {
         guard let rgba = element(for: array) else { return nil }
-        guard let color = try? UIColor(rgba_throws: rgba as String) else {
-            print("SwiftTheme WARNING: Not convert rgba \(rgba) in array: \(array)[\(currentThemeIndex)]")
-            return nil
-        }
-        return color
+//        guard let color = try? UIColor(rgba_throws: rgba as String) else {
+//            print("SwiftTheme WARNING: Not convert rgba \(rgba) in array: \(array)[\(currentThemeIndex)]")
+//            return nil
+//        }
+        return rgba
     }
     
     public class func imageElement(for array: [String]) -> UIImage? {

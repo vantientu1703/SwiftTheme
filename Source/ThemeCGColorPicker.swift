@@ -19,11 +19,11 @@ import CoreGraphics.CGColor
         self.init(v: { map(ThemeManager.value(for: keyPath)) })
     }
     
-    public convenience init(colors: String...) {
+    public convenience init(colors: UIColor...) {
         self.init(v: { ThemeManager.colorElement(for: colors)?.cgColor })
     }
     
-    public required convenience init(arrayLiteral elements: String...) {
+    public required convenience init(arrayLiteral elements: UIColor...) {
         self.init(v: { ThemeManager.colorElement(for: elements)?.cgColor })
     }
     
@@ -51,7 +51,7 @@ import CoreGraphics.CGColor
         return ThemeCGColorPicker(v: { map(ThemeManager.value(for: keyPath)) })
     }
     
-    class func pickerWithColors(_ colors: [String]) -> ThemeCGColorPicker {
+    class func pickerWithColors(_ colors: [UIColor]) -> ThemeCGColorPicker {
         return ThemeCGColorPicker(v: { ThemeManager.colorElement(for: colors)?.cgColor })
     }
     

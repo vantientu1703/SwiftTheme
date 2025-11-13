@@ -18,11 +18,11 @@ import UIKit
         self.init(v: { map(ThemeManager.value(for: keyPath)) })
     }
     
-    public convenience init(colors: String...) {
+    public convenience init(colors: UIColor...) {
         self.init(v: { ThemeManager.colorElement(for: colors) })
     }
     
-    public required convenience init(arrayLiteral elements: String...) {
+    public required convenience init(arrayLiteral elements: UIColor...) {
         self.init(v: { ThemeManager.colorElement(for: elements) })
     }
     
@@ -50,7 +50,7 @@ import UIKit
         return ThemeColorPicker(v: { map(ThemeManager.value(for: keyPath)) })
     }
     
-    class func pickerWithColors(_ colors: [String]) -> ThemeColorPicker {
+    class func pickerWithColors(_ colors: [UIColor]) -> ThemeColorPicker {
         return ThemeColorPicker(v: { ThemeManager.colorElement(for: colors) })
     }
     
