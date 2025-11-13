@@ -8,6 +8,17 @@
 
 import UIKit
 
+fileprivate typealias setCGColorValueIMP        = @convention(c) (NSObject, Selector, CGColor) -> Void
+fileprivate typealias setCGFloatValueIMP        = @convention(c) (NSObject, Selector, CGFloat) -> Void
+fileprivate typealias setValueForStateIMP       = @convention(c) (NSObject, Selector, AnyObject, UIControl.State) -> Void
+fileprivate typealias setKeyboardValueIMP       = @convention(c) (NSObject, Selector, UIKeyboardAppearance) -> Void
+fileprivate typealias setActivityStyleValueIMP  = @convention(c) (NSObject, Selector, UIActivityIndicatorView.Style) -> Void
+fileprivate typealias setScrollStyleValueIMP    = @convention(c) (NSObject, Selector, UIScrollView.IndicatorStyle) -> Void
+#if os(iOS)
+fileprivate typealias setBarStyleValueIMP       = @convention(c) (NSObject, Selector, UIBarStyle) -> Void
+fileprivate typealias setStatusBarStyleValueIMP = @convention(c) (NSObject, Selector, UIStatusBarStyle, Bool) -> Void
+#endif
+
 extension NSObject {
     
     typealias ThemePickers = [String: ThemePicker]
@@ -30,13 +41,19 @@ extension NSObject {
     
     func performThemePicker(selector: String, picker: ThemePicker?) {
         let sel = Selector(selector)
-        
+
         guard responds(to: sel)           else { return }
         guard let value = picker?.value() else { return }
         
         if let statePicker = picker as? ThemeStatePicker {
             let setState = unsafeBitCast(method(for: sel), to: setValueForStateIMP.self)
-            statePicker.values.forEach { setState(self, sel, $1.value()! as AnyObject, UIControl.State(rawValue: $0)) }
+            statePicker.values.forEach {
+                guard let value = $1.value() else {
+                    print("SwiftTheme WARNING: Missing value for ThemeStatePicker! Selector: \(String(describing: sel))")
+                    return
+                }
+                setState(self, sel, value as AnyObject, UIControl.State(rawValue: $0))
+            }
         }
         
         else if let statusBarStylePicker = picker as? ThemeStatusBarStylePicker {
@@ -62,6 +79,11 @@ extension NSObject {
             let setActivityStyle = unsafeBitCast(method(for: sel), to: setActivityStyleValueIMP.self)
             setActivityStyle(self, sel, value as! UIActivityIndicatorView.Style)
         }
+            
+        else if picker is ThemeScrollViewIndicatorStylePicker {
+            let setIndicatorStyle = unsafeBitCast(method(for: sel), to: setScrollStyleValueIMP.self)
+            setIndicatorStyle(self, sel, value as! UIScrollView.IndicatorStyle)
+        }
         
         else if picker is ThemeCGFloatPicker {
             let setCGFloat = unsafeBitCast(method(for: sel), to: setCGFloatValueIMP.self)
@@ -75,16 +97,6 @@ extension NSObject {
         
         else { perform(sel, with: value) }
     }
-    
-    fileprivate typealias setCGColorValueIMP        = @convention(c) (NSObject, Selector, CGColor) -> Void
-    fileprivate typealias setCGFloatValueIMP        = @convention(c) (NSObject, Selector, CGFloat) -> Void
-    fileprivate typealias setValueForStateIMP       = @convention(c) (NSObject, Selector, AnyObject, UIControl.State) -> Void
-    fileprivate typealias setKeyboardValueIMP       = @convention(c) (NSObject, Selector, UIKeyboardAppearance) -> Void
-    fileprivate typealias setActivityStyleValueIMP  = @convention(c) (NSObject, Selector, UIActivityIndicatorView.Style) -> Void
-    #if os(iOS)
-    fileprivate typealias setBarStyleValueIMP       = @convention(c) (NSObject, Selector, UIBarStyle) -> Void
-    fileprivate typealias setStatusBarStyleValueIMP = @convention(c) (NSObject, Selector, UIStatusBarStyle, Bool) -> Void
-    #endif
 }
 
 extension NSObject {
@@ -105,6 +117,12 @@ extension NSObject {
         themePickers.forEach { selector, picker in
             UIView.animate(withDuration: ThemeManager.animationDuration) {
                 self.performThemePicker(selector: selector, picker: picker)
+                // For iOS 13, force an update of the nav bar when the theme changes.
+                if #available(iOS 13.0, *) {
+                    if let navBar = self as? UINavigationBar {
+                        navBar.setNeedsLayout()
+                    }
+                }
             }
         }
     }
